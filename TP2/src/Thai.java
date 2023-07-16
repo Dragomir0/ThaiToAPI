@@ -19,20 +19,43 @@ public class Thai {
      * @return String qui contient les caractères de l'API correspondant
      */
     public static String versAPI(String texte) {
-        if (texte == null || texte.isEmpty()) { return ""; }
 
-        String[] syllables = texte.split(" ");
+        //Entrée : " \u0E0D\u0E34" Sortie : " \u006A\u0069".
+
+        boolean contientCf = false;
+        ArrayList<String> texteEntree = new ArrayList<>();
         StringBuilder result = new StringBuilder();
+        String ci = "";
+        String cf = "";
 
-        for (String syllable : syllables) {
-
-            // split the syllable into ci, vowel, and cf components
-            // Note: this will be complex and will depend on the specifics of the Thai language
-
-            // Translate components into IPA characters using ciMap and cfMap
-            // Append them to the result string
-            // Add a space between syllables
+        //Split String texte into ArrayList texteEntree
+        for (int i = 0; i < texte.length(); i++) {
+            if (texte.charAt(i) == '\\') {
+                texteEntree.add(texte.substring(i + 1, i + 6));
+            }
         }
+        Consonnes consonnes = new Consonnes();
+        consonnes.setConsonnes();
+        Voyelles voyelles = new Voyelles();
+        voyelles.setVoyelles();
+        System.out.println(texteEntree.get(0) + " " + texteEntree.get(1));
+        //Tester si 1er lettre est consonne et si contient cf
+        if (consonnes.testerSiConsonne(texteEntree.get(0))){
+            ci = consonnes.getConsonnes(texteEntree.get(0)).split(",")[0];
+            result.append(ci);
+            //Teste si contient cf
+            if (consonnes.testerSiContientCf(texteEntree.get(0))) {
+                cf = consonnes.getConsonnesCf(texteEntree.get(0));
+                contientCf = true;
+                }
+            }
+        System.out.println(cf);
+
+//        if (texte == null || texte.isEmpty()) { return ""; }
+//        String[] syllables = texte.split(" ");
+//        for (String syllable : syllables) {
+//
+//        }
         return result.toString().trim();
     }
 }
