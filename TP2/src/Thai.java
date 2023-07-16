@@ -1,7 +1,5 @@
 package TP2.src;
-
 import java.util.*;
-
 /**********************************************************
  * Cette classe traite les syllabes thaïs et les convertit en API et les affichera
  *
@@ -18,7 +16,7 @@ public class Thai {
     public static void main(String[] args) {
         String texte = "\\u0E40\\u0E2B\\u0E35\\u0E22\\u0E30";
         String syllabeAPI = versAPI(texte);
-        System.out.println("Resultat final: " + syllabeAPI);
+        System.out.println(syllabeAPI);
     }
 
     /**
@@ -53,7 +51,7 @@ public class Thai {
                 //Si consonne, alors mettre dans determinerAPI
                 if (consonnes.testerSiConsonne(s)) {
                     ci = consonnes.getConsonnes(s).split(",")[0];
-                    result.append("\\" + ci + " ");
+                    result.append(ci);
                     determinerAPI.append("ci ");
                     indexConsonne = txtEntree.indexOf(s);
                     trouverConsonne = true;
@@ -76,7 +74,7 @@ public class Thai {
 
         //Chercher chaine determinerAPI pour combinaison exacte
         if (voyelles.getVoyelles(determinerAPI.toString()) != null) {
-            result.append("\\" + voyelles.getVoyelles(determinerAPI.toString()));
+            result.append(voyelles.getVoyelles(determinerAPI.toString()));
             trouveCombinaison = true;
         }
 
@@ -93,11 +91,13 @@ public class Thai {
                 }
             }
         }
-        result.append("\\" + cf);
+        //result.append(cf);
 
         System.out.println("\nDeterminer API: " + determinerAPI + "\n");
 
-        return result.toString().trim();
+        String syllabeAPI = result.toString().trim();
+        syllabeAPI = syllabeAPI.replaceAll("u", "\\\\u");
+        return syllabeAPI;
     }
 
     public ArrayList<String> splitTexteEntree(String texte) {
