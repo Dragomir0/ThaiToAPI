@@ -1,10 +1,12 @@
 package TP2.src;
-
 import java.util.*;
-
+/**********************************************************
+ * Cette classe traite les consonnes thaïs et les affichera
+ * les consonnes initiales et finales de l'API selon un tableau
+ **********************************************************/
 public class Consonnes {
     private final Map<String, String> consonnes = new HashMap<>();
-    public void setConsonnes() {
+    public void setTabConsonnes() {
         //         Code thaï    ci       ,  cf
        consonnes.put("u0E0D","u006A u00A3,u006E");
        consonnes.put("u0E1C","u0070 u02B0");
@@ -19,9 +21,11 @@ public class Consonnes {
     public boolean testerSiConsonne(String key) {
         return consonnes.get(key) != null;
     }
+    //Retourne true si contient cf, sinon false
     public boolean testerSiContientCf(String key) {
-        return consonnes.get(key).split(",")[1] != null;
+        return consonnes.get(key).split(",").length > 1;
     }
+    //Retourne cf
     public String getConsonnesCf(String key) {
         return consonnes.get(key).split(",")[1];
     }

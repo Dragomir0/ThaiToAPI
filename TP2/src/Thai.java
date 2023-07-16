@@ -1,7 +1,9 @@
 package TP2.src;
+
 import java.util.*;
+
 /**********************************************************
- * Cette classe
+ * Cette classe traite les syllabes thaïs et les convertit en API et les affichera
  *
  * @author Dragomir Emilian Mihai
  *         Code permanent: MIHD80070108
@@ -10,52 +12,110 @@ import java.util.*;
  * @version 2023-07-11
  **********************************************************/
 public class Thai {
+    /**
+     * Cette methode main permet de tester la classe Thai avec une syllabe en unicode
+     */
+    public static void main(String[] args) {
+        String texte = "\\u0E40\\u0E2B\\u0E35\\u0E22\\u0E30";
+        String syllabeAPI = versAPI(texte);
+        System.out.println("Resultat final: " + syllabeAPI);
+    }
 
     /**
      * Cette methode recoit une chaîne de caractères en Unicode représentant des caractères thaïs et
      * retourne une chaîne de caractères en Unicode représentant les caractères de l'API
      *
      * @param texte qui contient les caractères thaïs à convertir
-     * @return String qui contient les caractères de l'API correspondant
+     * @return String contenant les caractères convertis en API
      */
     public static String versAPI(String texte) {
-
-        //Entrée : " \u0E0D\u0E34" Sortie : " \u006A\u0069".
-
-        boolean contientCf = false;
-        ArrayList<String> texteEntree = new ArrayList<>();
+        Thai thai = new Thai();
+        boolean contientCf = false,trouveCombinaison = false,trouverConsonne = false;
+        int indexConsonne = 0;
         StringBuilder result = new StringBuilder();
-        String ci = "";
-        String cf = "";
+        StringBuilder determinerAPI = new StringBuilder();
+        String ci = "", cf = "";
 
-        //Split String texte into ArrayList texteEntree
+        Consonnes consonnes = new Consonnes();
+        consonnes.setTabConsonnes();
+        Voyelles voyelles = new Voyelles();
+        voyelles.setTabVoyelles();
+
+        thai.verifierTexteEntree(texte);
+        ArrayList<String> txtEntree = thai.splitTexteEntree(texte);
+
+        System.out.println("Texte entree: " + txtEntree);
+
+        //Tester tous les characters de txtEntree pour voir si voyelle ou consonne
+        for (String s : txtEntree) {
+            //Si pas trouve consonne, chercher dans txtEntree
+            if (!trouverConsonne) {
+                //Si consonne, alors mettre dans determinerAPI
+                if (consonnes.testerSiConsonne(s)) {
+                    ci = consonnes.getConsonnes(s).split(",")[0];
+                    result.append("\\" + ci + " ");
+                    determinerAPI.append("ci ");
+                    indexConsonne = txtEntree.indexOf(s);
+                    trouverConsonne = true;
+
+                    //Determiner si consonne contient cf
+                    if (consonnes.testerSiContientCf(s)) {
+                        cf = consonnes.getConsonnesCf(s);
+                        contientCf = true;
+                    }
+                } else {
+                    //Si pas consonne, alors mettre voyelle dans determinerAPI
+                    determinerAPI.append(s).append(" ");
+                }
+            } else {
+                //Si on a trouve une consonne, append all remaining strings as voyelles
+                determinerAPI.append(s).append(" ");
+                //remove space of last string
+                }
+        }
+
+        //Chercher chaine determinerAPI pour combinaison exacte
+        if (voyelles.getVoyelles(determinerAPI.toString()) != null) {
+            result.append("\\" + voyelles.getVoyelles(determinerAPI.toString()));
+            trouveCombinaison = true;
+        }
+
+        //Si pas trouve de combinaison sans cf dans tab voyelles, alors revenir dans
+        //chaine pour convertir une voyelle en cf si possible a partir de l'indexConsonne de ci
+
+        //Si on trouve cf, on quitte la boucle
+        if (!trouveCombinaison) {
+            for (int i = indexConsonne + 1; i < txtEntree.size(); i++) {
+                if (consonnes.testerSiContientCf(txtEntree.get(i))) {
+                    cf = consonnes.getConsonnesCf(txtEntree.get(i));
+                    determinerAPI.append("cf");
+                    contientCf = true;
+                }
+            }
+        }
+        result.append("\\" + cf);
+
+        System.out.println("\nDeterminer API: " + determinerAPI + "\n");
+
+        return result.toString().trim();
+    }
+
+    public ArrayList<String> splitTexteEntree(String texte) {
+        ArrayList<String> texteEntree = new ArrayList<>();
         for (int i = 0; i < texte.length(); i++) {
             if (texte.charAt(i) == '\\') {
                 texteEntree.add(texte.substring(i + 1, i + 6));
             }
         }
-        Consonnes consonnes = new Consonnes();
-        consonnes.setConsonnes();
-        Voyelles voyelles = new Voyelles();
-        voyelles.setVoyelles();
-        System.out.println(texteEntree.get(0) + " " + texteEntree.get(1));
-        //Tester si 1er lettre est consonne et si contient cf
-        if (consonnes.testerSiConsonne(texteEntree.get(0))){
-            ci = consonnes.getConsonnes(texteEntree.get(0)).split(",")[0];
-            result.append(ci);
-            //Teste si contient cf
-            if (consonnes.testerSiContientCf(texteEntree.get(0))) {
-                cf = consonnes.getConsonnesCf(texteEntree.get(0));
-                contientCf = true;
-                }
-            }
-        System.out.println(cf);
-
-//        if (texte == null || texte.isEmpty()) { return ""; }
-//        String[] syllables = texte.split(" ");
-//        for (String syllable : syllables) {
-//
-//        }
-        return result.toString().trim();
+        return texteEntree;
     }
+
+    public void verifierTexteEntree(String texte) {
+        //si texte vide, retourner message "".
+        if (texte == null || texte.isEmpty()) {
+            System.exit(0);
+        }
+    }
+
+
 }
