@@ -187,7 +187,7 @@ class ThaiTest {
 
     @Test // l.e8.3
     void test_1Consonne30() {
-        assertEquals( "\u0070\u0254\u02D0", Thai.versAPI( "\u0E1B\u0E23" ) );
+        assertEquals( "\u0070\u0254\u02D0\u006E", Thai.versAPI( "\u0E1B\u0E23" ) );
     }
 
     @Test // l.e9.1

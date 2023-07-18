@@ -16,7 +16,12 @@ public class Consonnes {
     }
 
     public boolean testerSiContientCf(String key) {
-        return consonnes.get(key).split(",").length > 1;
+        boolean containsCf = false;
+       //search for "," in consonnes.get(key) without creating null pointer exception
+        if (consonnes.get(key) != null && consonnes.get(key).contains(",")) {
+            containsCf = true;
+        }
+        return containsCf;
     }
 
     public String getConsonnesCf(String key) {
