@@ -1,4 +1,5 @@
 package TP2.src;
+
 import java.util.*;
 
 /**********************************************************
@@ -12,10 +13,7 @@ import java.util.*;
  **********************************************************/
 public class Thai {
     public static void main(String[] args) {
-        //String t1 = "\u0E24\u0E45";
         String t2 = "\u0E15\u0E47\u0E2D\u0E22";
-        //Should return = "kaj";
-        //Need to check for combination before adding cf to see if it works without cf
         String syllabeAPI = versAPI(t2);
         System.out.println(syllabeAPI);
     }
@@ -99,6 +97,7 @@ public class Thai {
         }
         return indexResultat;
     }
+
     /**********************************************************
      * Ajoute les caractères restants apres ci et cf à "determinerAPI"
      *
@@ -117,6 +116,7 @@ public class Thai {
             }
         }
     }
+
     /**********************************************************
      * Recherche cf et son index à partir de l'index de ci
      *
@@ -164,6 +164,7 @@ public class Thai {
 
         return combiTrouvee;
     }
+
     /**********************************************************
      * Formate le StringBuilder "result" pour obtenir la transcription API finale
      *
@@ -212,6 +213,7 @@ public class Thai {
         System.out.println("Texte Formaté: " + texteEntree);
         return texteEntree;
     }
+
     /**********************************************************
      * Vérifie si les caracteres d'entree sont valides
      *
