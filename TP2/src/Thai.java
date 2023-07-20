@@ -1,147 +1,225 @@
 package TP2.src;
-
 import java.util.*;
 
 /**********************************************************
- * Cette classe traite les voyelles thaïs et les convertit en API
- * selon le tableau de conversion
+ * Cette classe traite les syllabes thaïs et les convertit en API et les affichera
+ *
+ * @author Dragomir Emilian Mihai
+ *         Code permanent: MIHD80070108
+ *         Courriel: jf991953@ens.uqam.ca
+ *         Cours: INF2120
+ * @version 2023-07-11
  **********************************************************/
 public class Thai {
     public static void main(String[] args) {
-        String texte = "\u0E1C\u0E27\u0E28";
-        String textev2 = "\u0E42\u0E1B\u0E21";
-
-        String syllabeAPI = versAPI(texte);
+        //String t1 = "\u0E24\u0E45";
+        String t2 = "\u0E15\u0E47\u0E2D\u0E22";
+        //Should return = "kaj";
+        //Need to check for combination before adding cf to see if it works without cf
+        String syllabeAPI = versAPI(t2);
         System.out.println(syllabeAPI);
     }
 
+    /**
+     * Convertit une chaîne de caractères thaïe en Unicode en son équivalent en API.
+     *
+     * @param texte La chaîne de caractères thaïe en Unicode à convertir.
+     * @return La chaîne de caractères convertie en API.
+     */
     public static String versAPI(String texte) {
         Thai thai = new Thai();
-
         ArrayList<String> txtEntree = thai.splitTexteEntree(texte);
-        ArrayList<String> txtEntreeCopy = new ArrayList<>(txtEntree);
-        int indexConsonne = 0;
+
         String syllabeAPI;
-        String ci = "", cf = "";
-        boolean consonneFound = false, combinaisonFound = false, cfTrouve = false;
+        MutableBoolean consonneTrouvee = new MutableBoolean(false);
+        MutableBoolean cfIdentifie = new MutableBoolean(false);
+        StringBuilder resultat = new StringBuilder();
+        StringBuilder determinerAPI = new StringBuilder();
 
         Consonnes consonnes = new Consonnes();
         consonnes.setTabConsonnes();
         Voyelles voyelles = new Voyelles();
         voyelles.setTabVoyelles();
 
-        StringBuilder result = new StringBuilder();
-        StringBuilder determinerAPI = new StringBuilder();
+        int indexCi = -1;
 
-        //Texte Entree: [u0E42, u0E1B, u0E21]
-        for (String s : txtEntreeCopy) {
-
-            consonneFound = thai.processChaqueChar(s, consonnes, determinerAPI, txtEntree, cfTrouve,consonneFound, result, ci, cf);
+        for (int i = 0; i < txtEntree.size(); i++) {
+            String s = txtEntree.get(i);
+            // Si on n'a pas encore trouvé de consonne, on cherche la première
+            if (!consonneTrouvee.estVrai()) {
+                indexCi = thai.trouverEtAjouterCi(s, consonnes, determinerAPI, txtEntree, consonneTrouvee, resultat);
+            }
         }
 
-        combinaisonFound = thai.chercherCombinaison(voyelles, determinerAPI, result, cf, consonneFound);
-        System.out.println("Combinaison found: " + combinaisonFound);
+        int indexCf = thai.trouverEtAjouterCf(indexCi, consonnes, txtEntree, cfIdentifie);
+        thai.addCharRestants(txtEntree, indexCi, indexCf, determinerAPI);
 
-        syllabeAPI = thai.finalizeResult(result);
+        if (cfIdentifie.estVrai()) {
+            determinerAPI.append("cf ");
+        }
+
+        boolean combinaisonTrouvee = thai.chercherCombinaison(voyelles, determinerAPI, resultat, "");
+        if (indexCf > 0) {
+            String valeurCf = consonnes.getConsonnesCf(txtEntree.get(indexCf));
+            resultat.append(valeurCf);
+        }
+        System.out.println("Combinaison trouvée: " + combinaisonTrouvee);
+        estCharThaiValide(combinaisonTrouvee);
+
+        syllabeAPI = thai.finaliserResultat(resultat);
         return syllabeAPI;
     }
 
-    // Trouve la premiere consonne et met le reste des voyelles dans determinerAPsans autre verification
-    public boolean processChaqueChar(String s, Consonnes consonnes, StringBuilder determinerAPI,
-                                    ArrayList<String> txtEntree, boolean cfTrouve, boolean consonneFound, StringBuilder result, String ci, String cf) {
-        int indexCi = 0;
-        int indexCf = 0;
-        //3x  Texte Entree: [u0E42, u0E1B, u0E21]
-        if (consonnes.testerSiConsonne(s) && consonneFound == false) {
-
-            ci = consonnes.getConsonnes(s).split(",")[0];
-            result.append(ci);
-            indexCi = txtEntree.indexOf(s);
-            determinerAPI.append("ci ");
-            consonneFound = true;
+    /**********************************************************
+     * Cherche et ajoute ci au StringBuilder "determinerAPI"
+     *
+     * @param s Le caractère courant à tester
+     * @param consonnes Instance de la classe Consonnes pour tester/obtenir les consonnes
+     * @param determinerAPI StringBuilder où le résultat est construit
+     * @param txtEntree Liste des caractères à traiter
+     * @param consonneTrouvee Indicateur si une consonne a déjà été trouvée
+     * @param resultat StringBuilder final qui contiendra la transcription API
+     * @return Index de la première consonne trouvée dans txtEntree, sinon -1
+     */
+    public int trouverEtAjouterCi(String s, Consonnes consonnes, StringBuilder determinerAPI,
+                                  ArrayList<String> txtEntree, MutableBoolean consonneTrouvee,
+                                  StringBuilder resultat) {
+        int indexResultat = -1;
+        // Si char pas consonne -> alors voyelle -> ajoute a resultat
+        if (!consonnes.testerSiConsonne(s)) {
+            determinerAPI.append(s).append(" ");
         }
-        //Si on a deja trouve une consonne et qu'on a une autre consonne, on doit ecrire cf a la fin du resultat
-        else if (consonneFound == true && cfTrouve == false ) {
-            for (int i = indexCi + 1; i < txtEntree.size(); i++) {
-                if (consonnes.testerSiContientCf(txtEntree.get(i))) {
-                    cf = consonnes.getConsonnesCf(txtEntree.get(i));
-                    txtEntree.remove(i);
-                    cfTrouve = true;
-                    System.out.println("cf trouve " + cfTrouve);
-                    indexCf = i;
-                    break;
+        // Si pas encore trouve consonne -> cherche 1ere consonne
+        else if (!consonneTrouvee.estVrai()) {
+            String ci = consonnes.getConsonneCi(s);
+            resultat.append(ci);
+            determinerAPI.append("ci ");
+            consonneTrouvee.setValue(true);
+            indexResultat = txtEntree.indexOf(s);
+        }
+        return indexResultat;
+    }
+    /**********************************************************
+     * Ajoute les caractères restants apres ci et cf à "determinerAPI"
+     *
+     * @param txtEntree Liste des caractères à traiter
+     * @param indexCi Index de la première consonne trouvée
+     * @param indexCf Index de la dernière consonne trouvée
+     * @param determinerAPI StringBuilder où le résultat est construit
+     */
+    public void addCharRestants(ArrayList<String> txtEntree, int indexCi, int indexCf, StringBuilder determinerAPI) {
+        for (int i = indexCi + 1; i < txtEntree.size(); i++) {
+            if (i != indexCf) {
+                // Si determinerAPI ne contient pas déjà le caractère à l'index i, on l'ajoute car c'est une voyelle
+                if (!determinerAPI.toString().contains(txtEntree.get(i))) {
+                    determinerAPI.append(txtEntree.get(i)).append(" ");
                 }
             }
-            determinerAPI.append("cf ");
-        } else {
-            // Si voyelle, on l'ajoute au resultat
-            determinerAPI.append(s).append(" ");
-            //determinerAPI.append("cf ");
         }
-        return consonneFound;
+    }
+    /**********************************************************
+     * Recherche cf et son index à partir de l'index de ci
+     *
+     * @param indexCi Index de la première consonne trouvée
+     * @param consonnes Instance de la classe Consonnes pour tester/obtenir les consonnes
+     * @param txtEntree Liste des caractères à traiter
+     * @param cfTrouve Indicateur si la dernière consonne (Cf) a été trouvée
+     * @return index de cf
+     */
+    public int trouverEtAjouterCf(int indexCi, Consonnes consonnes, ArrayList<String> txtEntree, MutableBoolean cfTrouve) {
+        int indexResult = -1;
+        if (!cfTrouve.estVrai()) {
+            int i = indexCi + 1;
+            while (i < txtEntree.size() && !consonnes.testerSiContientCf(txtEntree.get(i))) {
+                i++;
+            }
+            if (i < txtEntree.size()) {
+                cfTrouve.setValue(true);
+                indexResult = i;
+            }
+        }
+        return indexResult;
     }
 
-    // Processes the voyelles part of the syllabe
-    public boolean chercherCombinaison(Voyelles voyelles, StringBuilder determinerAPI, StringBuilder result, String cf, boolean containsCf) {
+    /**********************************************************
+     * Recherche une combinaison de voyelles dans le tableau de voyelles et l'ajoute à "result"
+     *
+     * @param voyelles Instance de la classe Voyelles pour obtenir les voyelles
+     * @param determinerAPI StringBuilder où le résultat est construit
+     * @param resultat StringBuilder final qui contiendra la transcription API
+     * @param cf Dernière consonne à ajouter si une combinaison est trouvée
+     * @return Vrai si une combinaison est trouvée, sinon faux
+     */
+    public boolean chercherCombinaison(Voyelles voyelles, StringBuilder determinerAPI, StringBuilder resultat, String cf) {
 
-        System.out.println("determinerAPI avant test combinaison: " + determinerAPI);
-        boolean combinaisonFound = false;
-        // Si on a une combinaison exacte, alors on l'ajoute au resultat
+        System.out.println("determinerAPI avant test: " + determinerAPI);
+        boolean combiTrouvee = false;
+
+        // Si trouve combinaison exacte -> ajoute au resultat
         if (voyelles.getVoyelles(determinerAPI.toString()) != null) {
-            result.append(voyelles.getVoyelles(determinerAPI.toString()));
-            result.append(cf);
-            combinaisonFound = true;
+            resultat.append(voyelles.getVoyelles(determinerAPI.toString()));
+            resultat.append(cf);
+            combiTrouvee = true;
         }
-        return combinaisonFound;
-    }
 
-    // Finalizes the syllabe by removing the last space and appending the syllabe API
-    public String finalizeResult(StringBuilder result) {
-        StringBuilder finalResult = new StringBuilder();
-        for (int i = 0; i < result.length(); i++) {
-            if (result.charAt(i) == ' ') {
-                result.deleteCharAt(i);
-                i--; // Decrement i since the length has decreased by deleting the space
-            } else if (result.charAt(i) == 'u' && i + 4 < result.length()) {
-                // Extract the Unicode characters from the next 4 positions
-                String unicodeChars = result.substring(i + 1, i + 5);
-                // Convert the Unicode characters to a Java character
-                char javaChar = (char) Integer.parseInt(unicodeChars, 16);
-                // Append the Java character to the final result
-                finalResult.append(javaChar);
-                // Skip the next 4 positions since they have been processed
+        return combiTrouvee;
+    }
+    /**********************************************************
+     * Formate le StringBuilder "result" pour obtenir la transcription API finale
+     *
+     * @param resultat StringBuilder contenant la transcription API
+     * @return Chaîne de caractères représentant la transcription API finale
+     */
+    public String finaliserResultat(StringBuilder resultat) {
+        System.out.println("API Final: " + resultat);
+        StringBuilder resFinal = new StringBuilder();
+        for (int i = 0; i < resultat.length(); i++) {
+            if (resultat.charAt(i) == ' ') {
+                resultat.deleteCharAt(i);
+                i--; // Décrémenter i car la longueur a diminué en supprimant l'espace
+            } else if (resultat.charAt(i) == 'u' && i + 4 < resultat.length()) {
+                // Extraire les caractères Unicode des 4 positions suivantes
+                String charsUnicode = resultat.substring(i + 1, i + 5);
+                // Convertir les caractères Unicode en un caractère Java
+                char charJava = (char) Integer.parseInt(charsUnicode, 16);
+                // Ajouter le caractère Java au résultat final
+                resFinal.append(charJava);
+                // Passer 4 positions -> next syllabe
                 i += 4;
             }
         }
-        return finalResult.toString();
+        return resFinal.toString();
     }
 
+    /**********************************************************
+     * Décompose le texte d'entrée (Unicode) en une ArrayList de caractères Thai
+     *
+     * @param texte Chaîne de caractères à décomposer
+     * @return ArrayList<String> contenant chaque caractère Thai du texte d'entrée
+     */
     public ArrayList<String> splitTexteEntree(String texte) {
         ArrayList<String> texteEntree = new ArrayList<>();
-        System.out.println("Texte: " + texte);
+        System.out.println("Texte entree: " + texte);
 
-        StringBuilder sb = new StringBuilder();
         for (char ch : texte.toCharArray()) {
-            sb.append(String.format("\\\\u%04X", (int) ch));
+            // Get Unicode value of character
+            int unicodeValueOfChar = (int) ch;
+            // Get Unicode value of character in hexadecimal
+            String formattedUnicodeValue = String.format("u%04X", unicodeValueOfChar); // Format that value
+            // Add to the list
+            texteEntree.add(formattedUnicodeValue);
         }
-
-        String unicodeText = sb.toString();
-        System.out.println("Unicode Text: " + unicodeText);
-
-        String[] split = unicodeText.split("\\\\\\\\u");
-        for (String s : split) {
-            if (!s.isEmpty()) {
-                texteEntree.add("u" + s);
-            }
-        }
-        System.out.println("Texte Entree: " + texteEntree + "\n");
+        System.out.println("Texte Formaté: " + texteEntree);
         return texteEntree;
     }
-
-//    public void verifierTexteEntree(String texte) {
-//        //si texte vide, retourner message "".
-//        if (texte == null || texte.isEmpty()) {
-//            System.exit(0);
-//        }
-//    }
+    /**********************************************************
+     * Vérifie si les caracteres d'entree sont valides
+     *
+     * @param combinaisonFound Vrai si une combinaison valide a été trouvée, sinon faux
+     */
+    public static void estCharThaiValide(boolean combinaisonFound) {
+        if (combinaisonFound == false) {
+            throw new NoSuchElementException();
+        }
+    }
 }

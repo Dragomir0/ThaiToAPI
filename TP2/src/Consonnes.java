@@ -1,33 +1,48 @@
 package TP2.src;
 import java.util.*;
-/**********************************************************
- * Cette classe traite les consonnes thaïs et les affichera
- * les consonnes initiales et finales de l'API selon un tableau
- **********************************************************/
+/**
+ * Cette classe traite les consonnes thaïlandaises en les convertissant en leur
+ * équivalent API et détermine si une consonne contient ci ou cf.
+ */
 public class Consonnes {
     private final Map<String, String> consonnes = new HashMap<>();
 
-    public String getConsonnes(String key) {
-        return consonnes.get(key);
+    /**
+     * Récupère la consonne ci si la clé contient un élément avant la virgule
+     * @param key La consonne a vérifier.
+     * @return La valeur de ci.
+     */
+    public String getConsonneCi(String key) {
+        return consonnes.get(key).split(",")[0];
     }
-
-    public boolean testerSiConsonne(String key) {
-        return consonnes.get(key) != null;
-    }
-
-    public boolean testerSiContientCf(String key) {
-        boolean containsCf = false;
-       //search for "," in consonnes.get(key) without creating null pointer exception
-        if (consonnes.get(key) != null && consonnes.get(key).contains(",")) {
-            containsCf = true;
-        }
-        return containsCf;
-    }
-
+    /**
+     * Récupère la consonne cf si la clé contient un élément après la virgule
+     * @param key La consonne a vérifier
+     * @return La valeur de cf.
+     */
     public String getConsonnesCf(String key) {
         return consonnes.get(key).split(",")[1];
     }
-
+    /**
+     * Vérifie si une consonne est présente dans la map.
+     * @param key La consonne a vérifier.
+     * @return true si la consonne est présente, sinon false.
+     */
+    public boolean testerSiConsonne(String key) {
+        return consonnes.get(key) != null;
+    }
+    /**
+     * Vérifie s'il existe une cf pour une certaine consonne passée en parametre.
+     * @param key La consonne a vérifier.
+     * @return true si la consonne a une forme finale, sinon false.
+     */
+    public boolean testerSiContientCf(String key) {
+        return consonnes.get(key) != null && consonnes.get(key).contains(",");
+    }
+    /**
+     * Initialise la map avec les consonnes thaïlandaises et leur équivalent API,
+     * séparant le ci du cf avec une virgule.
+     */
     public void setTabConsonnes() {
         consonnes.put("u0E01","u006B,u006B");
         consonnes.put("u0E02","u006B u02B0,u006B");
