@@ -77,7 +77,7 @@ public class Voyelles {
         voyelles.put("u0E42 ci cf ", "u006Fu02D0");
         voyelles.put("ci u0E2D ", "u0254u02D0");
         voyelles.put("ci u0E2D cf ", "u0254u02D0");
-        //voyelles.put("ci cf ","u0254u02D0");
+        voyelles.put("ci cf 2 ","u0254u02D0");
         voyelles.put("u0E40 ci u0E2D ", "u0264u02D0");
         voyelles.put("u0E40 ci u0E34 cf ", "u0264u02D0");
         voyelles.put("u0E40 ci u0E2D cf ", "u0264u02D0");

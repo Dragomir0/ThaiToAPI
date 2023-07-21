@@ -13,11 +13,10 @@ import java.util.*;
  **********************************************************/
 public class Thai {
     public static void main(String[] args) {
-        String t2 = "\u0E15\u0E47\u0E2D\u0E22";
+        String t2 = "\u0E40\u0E0F\u0E35\u0E22\u0E13";
         String syllabeAPI = versAPI(t2);
         System.out.println(syllabeAPI);
     }
-
     /**
      * Convertit une chaîne de caractères thaïe en Unicode en son équivalent en API.
      *
@@ -50,18 +49,28 @@ public class Thai {
         }
 
         int indexCf = thai.trouverEtAjouterCf(indexCi, consonnes, txtEntree, cfIdentifie);
-        thai.addCharRestants(txtEntree, indexCi, indexCf, determinerAPI);
 
-        if (cfIdentifie.estVrai()) {
-            determinerAPI.append("cf ");
-        }
+        boolean combinaisonTrouvee = false;
+        thai.addCharRestants(txtEntree, indexCi, indexCf, determinerAPI, combinaisonTrouvee);
+        combinaisonTrouvee = thai.chercherCombinaison(voyelles, determinerAPI, resultat, txtEntree);
 
-        boolean combinaisonTrouvee = thai.chercherCombinaison(voyelles, determinerAPI, resultat, "");
-        if (indexCf > 0) {
-            String valeurCf = consonnes.getConsonnesCf(txtEntree.get(indexCf));
-            resultat.append(valeurCf);
+        if (!combinaisonTrouvee){
+            //Delete le dernier syllabe de determinerAPI de taile 5
+            determinerAPI.delete(determinerAPI.length()-6, determinerAPI.length());
+            if (cfIdentifie.estVrai()) {
+                determinerAPI.append("cf ");
+            }
+            combinaisonTrouvee = thai.chercherCombinaison(voyelles, determinerAPI, resultat, txtEntree);
+
+            if (indexCf > 0) {
+                indexCf = txtEntree.size() - 1;
+                String valeurCf = consonnes.getConsonnesCf(txtEntree.get(indexCf));
+                System.out.println(valeurCf);
+                resultat.append(valeurCf);
+            }
         }
         System.out.println("Combinaison trouvée: " + combinaisonTrouvee);
+        //Si char
         estCharThaiValide(combinaisonTrouvee);
 
         syllabeAPI = thai.finaliserResultat(resultat);
@@ -106,9 +115,9 @@ public class Thai {
      * @param indexCf Index de la dernière consonne trouvée
      * @param determinerAPI StringBuilder où le résultat est construit
      */
-    public void addCharRestants(ArrayList<String> txtEntree, int indexCi, int indexCf, StringBuilder determinerAPI) {
+    public void addCharRestants(ArrayList<String> txtEntree, int indexCi, int indexCf, StringBuilder determinerAPI, boolean combinaisonTrouvee) {
         for (int i = indexCi + 1; i < txtEntree.size(); i++) {
-            if (i != indexCf) {
+            if (i != indexCf || !combinaisonTrouvee) {
                 // Si determinerAPI ne contient pas déjà le caractère à l'index i, on l'ajoute car c'est une voyelle
                 if (!determinerAPI.toString().contains(txtEntree.get(i))) {
                     determinerAPI.append(txtEntree.get(i)).append(" ");
@@ -147,21 +156,17 @@ public class Thai {
      * @param voyelles Instance de la classe Voyelles pour obtenir les voyelles
      * @param determinerAPI StringBuilder où le résultat est construit
      * @param resultat StringBuilder final qui contiendra la transcription API
-     * @param cf Dernière consonne à ajouter si une combinaison est trouvée
      * @return Vrai si une combinaison est trouvée, sinon faux
      */
-    public boolean chercherCombinaison(Voyelles voyelles, StringBuilder determinerAPI, StringBuilder resultat, String cf) {
+    public boolean chercherCombinaison(Voyelles voyelles, StringBuilder determinerAPI, StringBuilder resultat, ArrayList<String> txtEntree) {
 
         System.out.println("determinerAPI avant test: " + determinerAPI);
         boolean combiTrouvee = false;
-
         // Si trouve combinaison exacte -> ajoute au resultat
         if (voyelles.getVoyelles(determinerAPI.toString()) != null) {
-            resultat.append(voyelles.getVoyelles(determinerAPI.toString()));
-            resultat.append(cf);
-            combiTrouvee = true;
-        }
-
+                resultat.append(voyelles.getVoyelles(determinerAPI.toString()));
+                combiTrouvee = true;
+            }
         return combiTrouvee;
     }
 
@@ -220,6 +225,7 @@ public class Thai {
      * @param combinaisonFound Vrai si une combinaison valide a été trouvée, sinon faux
      */
     public static void estCharThaiValide(boolean combinaisonFound) {
+
         if (combinaisonFound == false) {
             throw new NoSuchElementException();
         }
