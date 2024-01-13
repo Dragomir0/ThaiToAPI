@@ -6,8 +6,6 @@ import java.util.*;
  * Cette classe traite les syllabes thaïs et les convertit en API et les affichera
  *
  * @author Dragomir Emilian Mihai
- *         Code permanent: MIHD80070108
- *         Courriel: jf991953@ens.uqam.ca
  *         Cours: INF2120
  * @version 2023-07-11
  **********************************************************/
