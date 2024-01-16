@@ -1,4 +1,4 @@
-package TP2.src;
+package src;
 
 import org.junit.jupiter.api.Test;
 
